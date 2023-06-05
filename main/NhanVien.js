@@ -41,5 +41,4 @@ function NhanVien(taiKhoan, hoTen, email, pass, ngayLam, luongCB, chucVu, gioLam
         }
     }
 
-
 }

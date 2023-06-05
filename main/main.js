@@ -7,6 +7,7 @@ function getValue(id) {
 
 //=======================================================================//
 const dsnv = new DanhSachNhanVien();
+const validation = new Validation();
 
 function setLocalStorage(mangNV) {
     localStorage.setItem("DSNhanVien", JSON.stringify(mangNV));
@@ -20,7 +21,13 @@ function getLocalStorage() {
 }
 getLocalStorage();
 
-//=======================================================================//
+//Reset Form =======================================================================//
+getID("btnThem").onclick = function clickThemNV() {
+    getID("formNV").reset();
+    getID("tknv").disabled = false;
+}
+
+//Them NV =======================================================================//
 getID("btnThemNV").onclick = function themNV() {
     var taiKhoan = getValue("tknv")
     var hoTen = getValue("name")
@@ -31,19 +38,42 @@ getID("btnThemNV").onclick = function themNV() {
     var chucVu = getValue("chucvu")
     var gioLam = getValue("gioLam")
 
+    var isValid = true;
+    // các hàm kiểm tra dữ liệu
+    // Mã: ko bỏ trống, ko dc trùng
+    isValid = validation.checkEmpty(taiKhoan, "tbTKNV", "Tài khoản không được để trống")
+        && validation.checkTaiKhoanTrung(taiKhoan, "tbTKNV", "Tài khoản không được trùng", dsnv.mangNV)
+        && validation.kituTK(taiKhoan, "tbTKNV", "Tài khoản từ 4 - 6 kí tự");
 
-    var nv = new NhanVien(taiKhoan, hoTen, email, pass, ngayLam, luongCB, chucVu, gioLam)
-    // console.log(taiKhoan, hoTen, email, pass, ngayLam, luongCB, chucVu, gioLam)
-    nv.tongLuong();
-    nv.xepLoai();
-    console.log(nv)
+    isValid &= validation.checkEmpty(hoTen, "tbTen", "Tên không được để trống")
+        && validation.checkName(hoTen, "tbTen", "Tên chỉ chứa kí tự chữ");
 
-    dsnv.themNV(nv)
-    console.log(dsnv)
-    console.log(dsnv.mangNV)
+    isValid &= validation.checkEmpty(email, "tbEmail", "Email không được để trống")
+        && validation.checkEmail(email, "tbEmail", "Email không đúng định dạng");
 
-    hienThiTable(dsnv.mangNV)
-    setLocalStorage(dsnv.mangNV)
+    isValid &= validation.checkEmpty(pass, "tbMatKhau", "Mật khẩu không được để trống")
+        && validation.checkMatKhau(pass, "tbMatKhau", "Mật khẩu chứa ít nhất 1 ký tự số, 1 kí tự hoa, 1 kí tự đặc biệt (từ 6-10 kí tự)");
+
+    isValid &= validation.checkEmpty(ngayLam, "tbNgay", "Email không được để trống")
+        && validation.checkNgay(ngayLam, "tbNgay", "Chưa đúng định dạng mm/dd/yyy");
+
+    isValid &= validation.checkEmpty(luongCB, "tbLuongCB", "Lương không được để trống");
+
+    isValid &= validation.checkEmpty(luongCB, "tbLuongCB", "Lương không được để trống");
+
+    isValid &= validation.checkEmpty(gioLam, "tbGiolam", "Giờ làm không được để trống");
+
+
+    if (isValid) {
+        var nv = new NhanVien(taiKhoan, hoTen, email, pass, ngayLam, luongCB, chucVu, gioLam)
+        // console.log(taiKhoan, hoTen, email, pass, ngayLam, luongCB, chucVu, gioLam)
+        nv.tongLuong();
+        nv.xepLoai();
+        dsnv.themNV(nv)
+
+        hienThiTable(dsnv.mangNV)
+        setLocalStorage(dsnv.mangNV)
+    }
 }
 
 //=======================================================================//
@@ -59,7 +89,7 @@ function hienThiTable(mangNV) {
             <td>${nv.chucVu}</td>
             <td>${nv.tongLuong}</td>
             <td>${nv.xepLoai}</td>
-            <td>
+            <td class = "col-2">
             <button class="btn btn-danger" onclick="xoaNhanVien('${nv.taiKhoan}')">Xóa</button>
             <button class="btn btn-warning" data-toggle="modal"
             data-target="#myModal" onclick="xemThongTin('${nv.taiKhoan}')" >Xem</button>
@@ -69,29 +99,55 @@ function hienThiTable(mangNV) {
     })
     getID("tableDanhSach").innerHTML = thongTinNV;
 }
-{/* <button class="btn btn-primary" id="btnThem" data-toggle="modal" data-target="#myModal">Thêm nhân viên</button> */}
-//=======================================================================//
+
+//Xoa NV =======================================================================//
 function xoaNhanVien(taiKhoan) {
     dsnv.xoaNV(taiKhoan);
 
     hienThiTable(dsnv.mangNV);
     setLocalStorage(dsnv.mangNV);
 }
-//=======================================================================//
+
+//Xem NV =======================================================================//
 function xemThongTin(taiKhoan) {
-    getID("myModal").classList.add("modal", "fade", "show");
+    var indexFind = dsnv.timIndex(taiKhoan);
+    var nvFind = dsnv.mangNV[indexFind];
+    // console.log(nvFind)
 
-    getID("myModal").style.display = "block";
+    getID("tknv").value = nvFind.taiKhoan;
+    getID("tknv").disabled = true
+    getID("name").value = nvFind.hoTen
+    getID("email").value = nvFind.email
+    getID("password").value = nvFind.pass
+    getID("datepicker").value = nvFind.ngayLam
+    getID("luongCB").value = nvFind.luongCB
+    getID("chucvu").value = nvFind.chucVu
+    getID("gioLam").value = nvFind.gioLam
+}
 
-    // var svFind = dssv.mangSV[indexFind];
-    //     document.getElementById("txtMaSV").value = svFind.maSV
-    //     document.getElementById("txtMaSV").disabled
-    //     getID("txtTenSV").value = svFind.tenSV
-    //     getID("txtEmail").value = svFind.mailSV
-    //     getID("txtSDT").value = svFind.sdtSV
-    //     getID("loaiSV").value = svFind.loaiSV
-    //     getID("txtDiemRL").value = svFind.diemRL
-    //     getID("txtDiemToan").value = svFind.diemToan
-    //     getID("txtDiemLy").value = svFind.diemLy
-    //     getID("txtDiemHoa").value = svFind.diemHoa
+//Cap nhat NV =======================================================================//
+getID("btnCapNhat").onclick = function capNhat() {
+    var taiKhoan = getValue("tknv")
+    var hoTen = getValue("name")
+    var email = getValue("email")
+    var pass = getValue("password")
+    var ngayLam = getValue("datepicker")
+    var luongCB = getValue("luongCB")
+    var chucVu = getValue("chucvu")
+    var gioLam = getValue("gioLam")
+
+    var nv = new NhanVien(taiKhoan, hoTen, email, pass, ngayLam, luongCB, chucVu, gioLam)
+    nv.tongLuong();
+    nv.xepLoai();
+
+    dsnv.capNhatNV(nv);
+    setLocalStorage(dsnv.mangNV);
+    hienThiTable(dsnv.mangNV);
+}
+
+//Tim loai NV =======================================================================//
+document.getElementById("searchName").onkeyup = function timKiem() {
+    var tuTim = getValue("searchName")
+    var mangTK = dsnv.timLoaiNV(tuTim);
+    hienThiTable(mangTK);
 }

@@ -1,21 +1,49 @@
 function DanhSachNhanVien() {
     this.mangNV = [];
 
-    //Phương thức
+    //Phương thức thêm
     this.themNV = function (nv) {
-        //sv: 1 sv mới cần thêm
         this.mangNV.push(nv);
     }
 
-    this.xoaNV = function (taiKhoan) {
+    //Tìm index
+    this.timIndex = function (taiKhoan) {
         var indexFind;
         this.mangNV.map(function (nv, index) {
             if (nv.taiKhoan === taiKhoan) {
                 indexFind = index;
             }
-            return indexFind;
         })
+        return indexFind;
+    }
+
+    //Phương thức xóa
+    this.xoaNV = function (taiKhoan) {
+        var indexFind = this.timIndex(taiKhoan);
         this.mangNV.splice(indexFind, 1);
     }
+
+    //Phương thức cập nhật
+    this.capNhatNV = function (nv) {
+        var indexFind = this.timIndex(nv.taiKhoan);
+        this.mangNV[indexFind] = nv;
+    }
+
+    //Phương thức tìm kiếm
+    this.timLoaiNV = function (loaiTim) {
+        var mangTK = [];
+        //chuyển sang chữ thường + khoảng trắng
+        var loaiTimReplace = loaiTim.toLowerCase().replace(/\s/g, "");
+
+        this.mangNV.map(function (nv, index) {
+            var loaiReplace = nv.xepLoai.toLowerCase().replace(/\s/g, "");
+            var result = loaiReplace.indexOf(loaiTimReplace);
+            if (result > -1) {
+                mangTK.push(nv);
+            }
+        });
+        return mangTK;
+    }
+
 }
 
